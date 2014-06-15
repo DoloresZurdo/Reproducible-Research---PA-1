@@ -1,0 +1,159 @@
+rm(list=ls())
+setwd("~/Data_Science_Specialization/05_ReproducibleResearch/CourseProject/RepData_PeerAssessment1")
+
+# Read all data
+data_PA1 <- read.csv("activity.csv")
+data_PA1$date <- as.Date(data_PA1$date, format = "%Y-%m-%d")
+
+# add weekday information to the data_PA1 data.frame
+data_PA1 <- cbind(data_PA1, 
+            weekday_chr = weekdays( as.Date(data_PA1$date, format = "%Y-%m-%d") ), 
+            week_id     = integer(nrow(data_PA1)),
+            type_day    = character(nrow(data_PA1)),
+            stringsAsFactors=FALSE)
+
+weekday_data <- data.frame( weekday_chr = c("Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"),
+                           weekday_id  = c(1, 2, 3, 4, 5, 6, 7),
+                           mean_steps  = numeric(7),
+                           median_steps = numeric(7),
+                           mean_steps_interv5 = numeric (7))
+
+day_data <- data.frame(day   = as.Date(names(table(data_PA1$date)), format =("%Y-%m-%d")),
+                       steps = integer(61),
+                       mean = integer (61),
+                       median = integer (61))
+
+interval_data <- data.frame(interval =integer(288),
+                            mean_interval = numeric(288))
+
+head(data_PA1)
+
+# fill data of steps according with date 
+for (k in 1:nrow(day_data)){
+    comparison_date <- day_data$day[k]
+    day_subset <- subset(data_PA1, data_PA1$date == comparison_date)
+    day_data$steps[k] <- sum(day_subset$steps, na.rm=TRUE)
+    day_data$mean[k] <- mean(day_subset$steps, na.rm=TRUE)
+    day_data$median [k] <- median(day_subset$steps, na.rm=TRUE)
+}
+
+head(day_data)
+sum(is.na(day_data))
+rm( list = c( "k", "comparison_date", "day_subset"))
+
+# plot histogram of the total number of steps taken each day
+setwd("./..")
+png(filename="histogram_totalnumber_steps_each_day.png")
+hist(day_data$steps, breaks = 8)
+dev.off()
+
+for (i in 1:nrow(data_PA1)){
+    for (j in 1:nrow(weekday_data)){
+        if (data_PA1$weekday_chr[i] == weekday_data$weekday_chr[j]){
+            data_PA1$week_id[i] <- weekday_data$weekday_id[j]
+            
+            break
+        } 
+        
+    }
+
+}
+
+# Add mean and median of steps per day in weekday_data data.frame
+# Add mean of steps per day for 5 minutes interval
+for (i in 1:nrow(weekday_data)){
+    week_id_subset <- subset(data_PA1, data_PA1$week_id == i)
+    mean_i <- mean(week_id_subset$steps, na.rm=TRUE)
+    weekday_data$mean_steps[i] <- mean_i
+    median_i <- median(week_id_subset$steps, na.rm=TRUE)
+    weekday_data$median_steps[i] <- median_i
+    weekday_data$mean_steps_interv5[i] <- weekday_data$mean_steps[i]/288
+}
+
+weekday_data
+# Delete auxiliar variables, to clean the code
+rm( list = c("i", "j", "mean_i", "median_i", "week_id_subset") )
+
+# fill data of steps according with interval
+for (i in 1:nrow(interval_data)){
+    interval_data$interval[i] <- data_PA1$interval[i]
+    interval_subset <- subset(data_PA1, data_PA1$interval == data_PA1$interval[i])
+    mean_interval <- mean(interval_subset$steps, na.rm=TRUE)
+    interval_data$mean_interval[i] <- mean_interval
+}
+
+# plot 5-minute interval (x-axis) and the average number of steps taken, 
+# averaged across all days (y-axis)
+png(filename="5_minute_interval_for_all_days.png")
+plot(interval_data$interval, interval_data$mean_interval, type="l", xlab=" 5-minute interval", bg="transparent", ylab ="averaged across all days")
+lines(interval_data$interval, interval_data$mean_interval, col = "blue")
+legend("topright", lwd = 1, col = c("blue"), legend = c("steps per interval"))
+dev.off()
+
+# Interval which Maximun mean steps 
+max_step_interval <- which.max(interval_data$mean_interval)
+interval_data[max_step_interval,]
+
+#Number of missing data
+clean_data <- na.omit(data_PA1)
+tail(data_PA1)
+head(clean_data)
+total_NA <- length(data_PA1$steps) - length(clean_data$steps)
+total_NA # 2304
+
+
+# filling in all of the missing values in the dataset.
+# Strategy: mean for that day
+for (id in 1:7 ) {
+    data_PA1$steps[ is.na(data_PA1$steps) & (data_PA1$week_id == id) ] <- weekday_data$mean_steps_interv5[id]
+} 
+
+# Delete variables 
+rm(list=c("clean_data", "interval_subset", "id", "mean_interval", "total_NA"))
+
+# fill mean data per day 
+for (k in 1:nrow(day_data)){
+    comparison_date <- day_data$day[k]
+    day_subset <- subset(data_PA1, data_PA1$date == comparison_date)
+    day_data$mean[k] <- mean(day_subset$steps, na.rm=TRUE)
+    day_data$median [k] <- median(day_subset$steps, na.rm=TRUE)
+}
+day_data
+
+# Delete variables 
+rm(list=c("comparison_date", "k", "day_subset"))
+
+# plot histogram of the total number of steps taken each day without missing values
+png(filename="histogram_totalnumber_steps_each_day_without_missing_values.png")
+hist(day_data$steps, breaks = 8)
+dev.off()
+
+# The impact of the selected methodology (in case of missing value we estimate mean for that day)
+# In intervals that we don't have steps for sample sleeping, we have intruce a mean.
+# Intervals with more steps as 8:35 has less steps than reality.
+
+table(data_PA1$week_id)
+head(data_PA1)
+
+# Datas of weekday variables
+for (i in 1:nrow(data_PA1)){
+    if(data_PA1$week_id[i] == 1 | data_PA1$week_id[i] == 2 |  data_PA1$week_id[i] == 3 | data_PA1$week_id[i] == 4 | data_PA1$week_id[i] == 5){
+        data_PA1$type_day [i] <- "weekday"
+    }else{
+        data_PA1$type_day [i] <- "weekend"
+    }
+}
+
+# Delete variables
+rm(list=c("i", "max_step_interval"))
+
+type_data <- data_PA1$type_day
+type_data
+
+
+# plot 
+library(datasets)
+library(lattice)
+png(filename="5_minute_interval_weeday_weekend.png")
+xyplot( data_PA1$steps ~data_PA1$interval | data_PA1$type_day, type = "l", data = data_PA1, layout = c(1, 2) )
+dev.off()
