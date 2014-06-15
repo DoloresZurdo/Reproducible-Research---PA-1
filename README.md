@@ -46,9 +46,9 @@ To fill all of the missing values in the dataset. I have used the following stra
 I plot histogram of the total number of steps taken each day without missing values
 with the name: "histogram_totalnumber_steps_each_day_without_missing_values.png"
 
-# The impact of the selected methodology (in case of missing value we estimate mean for that day)
-# In intervals that we don't have steps for sample sleeping, we have intruce a mean.
-# Intervals with more steps as 8:35 has less steps than reality.
+The impact of the selected methodology (in case of missing value we estimate mean for that day)
+In intervals that we don't have steps for sample sleeping, we have intruce a mean.
+Intervals with more steps as 8:35 has less steps than reality.
 
 For the new variable to difference among weekday and weekend i add a column in data_PA1 called "data_PA1$type_day"
 type_data variable has these values.
