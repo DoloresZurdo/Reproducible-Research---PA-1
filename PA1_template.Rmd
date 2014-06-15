@@ -1,5 +1,5 @@
 rm(list=ls())
-setwd("~/Data_Science_Specialization/05_ReproducibleResearch/CourseProject/RepData_PeerAssessment1")
+setwd("~/Data_Science_Specialization/05_ReproducibleResearch/CourseProject/RepData_PeerAssessment1/figures")
 
 # Read all data
 data_PA1 <- read.csv("activity.csv")
@@ -42,7 +42,7 @@ sum(is.na(day_data))
 rm( list = c( "k", "comparison_date", "day_subset"))
 
 # plot histogram of the total number of steps taken each day
-setwd("./..")
+setwd("~/Data_Science_Specialization/05_ReproducibleResearch/CourseProject/RepData_PeerAssessment1/figures")
 png(filename="histogram_totalnumber_steps_each_day.png")
 hist(day_data$steps, breaks = 8)
 dev.off()
@@ -84,6 +84,7 @@ for (i in 1:nrow(interval_data)){
 
 # plot 5-minute interval (x-axis) and the average number of steps taken, 
 # averaged across all days (y-axis)
+setwd("~/Data_Science_Specialization/05_ReproducibleResearch/CourseProject/RepData_PeerAssessment1/figures")
 png(filename="5_minute_interval_for_all_days.png")
 plot(interval_data$interval, interval_data$mean_interval, type="l", xlab=" 5-minute interval", bg="transparent", ylab ="averaged across all days")
 lines(interval_data$interval, interval_data$mean_interval, col = "blue")
@@ -124,6 +125,7 @@ day_data
 rm(list=c("comparison_date", "k", "day_subset"))
 
 # plot histogram of the total number of steps taken each day without missing values
+setwd("~/Data_Science_Specialization/05_ReproducibleResearch/CourseProject/RepData_PeerAssessment1/figures")
 png(filename="histogram_totalnumber_steps_each_day_without_missing_values.png")
 hist(day_data$steps, breaks = 8)
 dev.off()
@@ -152,8 +154,10 @@ type_data
 
 
 # plot 
+setwd("~/Data_Science_Specialization/05_ReproducibleResearch/CourseProject/RepData_PeerAssessment1/figures")
 library(datasets)
 library(lattice)
 png(filename="5_minute_interval_weeday_weekend.png")
 xyplot( data_PA1$steps ~data_PA1$interval | data_PA1$type_day, type = "l", data = data_PA1, layout = c(1, 2) )
 dev.off()
+
